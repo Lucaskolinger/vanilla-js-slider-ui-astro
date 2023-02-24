@@ -4,6 +4,7 @@ import { Icon } from "astro-icon";
 ---
 
 <section class="projects-slider">
+  <div class="backdrop"></div>
   <div class="projects-date slides-up"></div>
   <div class="slider__btn-container">
     <button
@@ -114,23 +115,17 @@ import { Icon } from "astro-icon";
 <script>
   const sliderSection = document.querySelector<HTMLElement>(".projects-slider");
   const sliderVideos = document.querySelector<HTMLDivElement>(".slider-videos");
-
   const slidesArray = [...sliderVideos.querySelectorAll<HTMLElement>("img")];
-
   const leftArrow =
     document.querySelector<HTMLButtonElement>(".slider__btn--left");
-
   const rightArrow = document.querySelector<HTMLButtonElement>(
     ".slider__btn--right"
   );
-
   const menuBtn =
     document.querySelector<HTMLButtonElement>(".slider__btn--menu");
-
   const projectsDropdown = document.querySelector<HTMLElement>(
     ".projects-dropdown-menu"
   );
-
   const dateUi = document.querySelector(".projects-date") as HTMLElement | null;
   const arrayOfElementsToToggle = [
     leftArrow,
@@ -139,6 +134,10 @@ import { Icon } from "astro-icon";
     dateUi,
     projectsDropdown,
   ];
+  // Adding the CSS Slide transition for every element that has to be slided out on click
+  arrayOfElementsToToggle.forEach((el) => {
+    el.style.transition = "all 800ms cubic-bezier(0.77,0,0.18,1)";
+  });
 
   const autoplayTime = 8000;
   const projectUiSlideTime = 8000;
@@ -146,16 +145,11 @@ import { Icon } from "astro-icon";
   let slideIndex = 1;
   let isMoving = false;
 
-  arrayOfElementsToToggle.forEach((el) => {
-    el.style.transition = "all 800ms cubic-bezier(0.77,0,0.18,1)";
-  });
-
-  //   Intersection observer for UI Slide-In and Slide-Out
+  // Intersection observer when the slider is used in a bigger application and I want the ui to automatically slide in when it's visible
   let projectsObserverOptions = {
     rootMargin: "0px",
     threshold: 0.25,
   };
-
   const projectsObserverCallback = (entries: IntersectionObserverEntry[]) => {
     entries.forEach((entry) => {
       if (entry.intersectionRatio >= 0.25) {
@@ -177,13 +171,13 @@ import { Icon } from "astro-icon";
       }
     });
   };
-
   const projectsObserver = new IntersectionObserver(
     projectsObserverCallback,
     projectsObserverOptions
   );
   projectsObserver.observe(sliderSection);
 
+  // Applying and removing CSS-classes for ui-animations
   const slideOutProjectsUI = () => {
     leftArrow.classList.add("slides-left");
     rightArrow.classList.add("slides-right");
@@ -191,7 +185,6 @@ import { Icon } from "astro-icon";
     dateUi.classList.add("slides-up");
     projectsDropdown.classList.add("slides-down");
   };
-
   const slideInProjectsUI = () => {
     leftArrow.classList.remove("slides-left");
     rightArrow.classList.remove("slides-right");
@@ -199,7 +192,7 @@ import { Icon } from "astro-icon";
     dateUi.classList.remove("slides-up");
     projectsDropdown.classList.remove("slides-down");
   };
-
+  // Toggle the ui-visibility-animation based on click events; but not when the ui itself is being clicked
   const handleClickOnSlider = (e: MouseEvent & { target: HTMLElement }) => {
     if (
       e.target.classList.contains("projects-dropdown-menu") ||
@@ -225,17 +218,19 @@ import { Icon } from "astro-icon";
       );
     }
   };
-
   sliderSection.addEventListener("click", handleClickOnSlider);
 
+  // transform the whole flex container
+  // And it updates the top-info-row in the ui, which is later intended to be a date, that's why it's called like this
   function moveSlides() {
     sliderVideos.style.transform = `translateX(-${slideIndex * 100}vw)`;
     dateUi.textContent = slidesArray[slideIndex].dataset.date;
   }
-
+  // Onload it should slide to the right by one, it then lands on image 1, because index 0 is the repeated last slide,
+  // which is for the infinite carousel effect
   moveSlides();
 
-  // autoplay
+  // autoplay initial setup, the timer is later always resetted when the user clicks somewhere
   const autoplay = () => {
     if (isMoving) {
       return;
@@ -244,7 +239,7 @@ import { Icon } from "astro-icon";
   };
   let autoplayTimer = setInterval(autoplay, autoplayTime);
 
-  // move when clicked
+  // Increase or decrease the slide index an trigger the slide animation (moveSlides)
   function moveHandler(direction: string) {
     isMoving = true;
     sliderVideos.style.transition = `transform 450ms cubic-bezier(0.65,0.05,0.36,1)`;
@@ -252,7 +247,7 @@ import { Icon } from "astro-icon";
     moveSlides();
   }
 
-  // click right btn
+  // when the slider is not currently moving it calls moveHandler to the right
   rightArrow.addEventListener("click", () => {
     if (isMoving) {
       return;
@@ -266,7 +261,7 @@ import { Icon } from "astro-icon";
     moveHandler("right");
   });
 
-  // click left btn
+  // when the slider is not currently moving it calls moveHandler to the left
   leftArrow.addEventListener("click", () => {
     if (isMoving) {
       return;
@@ -280,7 +275,7 @@ import { Icon } from "astro-icon";
     moveHandler("left");
   });
 
-  // keyboard arrow handler
+  // Same thing as on button-click but with keyboard events
   window.addEventListener("keyup", (e) => {
     if (isMoving) {
       return;
@@ -315,6 +310,7 @@ import { Icon } from "astro-icon";
     }
   });
 
+  // When first or last slide is active, it removes the transition and jumps to the other end of the slide
   sliderVideos.addEventListener("transitionend", () => {
     isMoving = false;
     // First and Last Slide Jumping
@@ -332,16 +328,15 @@ import { Icon } from "astro-icon";
 
   // toggling Menu
   let preventFilterBtnClick = false;
-
   menuBtn.addEventListener("click", () => {
     const isOpened = menuBtn.getAttribute("aria-expanded");
+    // Reset Ui slideout timer
     clearTimeout(projectsUiSlideTimeout);
     projectsUiSlideTimeout = setTimeout(slideOutProjectsUI, projectUiSlideTime);
-
+    // When the menu is currently transitioning it should not be clickable
     if (preventFilterBtnClick == true) {
       return;
     }
-
     if (isOpened === "false") {
       projectsDropdown.style.display = "flex";
       setTimeout(() => {
@@ -352,6 +347,7 @@ import { Icon } from "astro-icon";
       preventFilterBtnClick = true;
       menuBtn.setAttribute("aria-expanded", "false");
       projectsDropdown.setAttribute("aria-expanded", "false");
+      // The timeout hack is because I want to first have it transition and then set display to none
       setTimeout(() => {
         projectsDropdown.style.display = "none";
         preventFilterBtnClick = false;
@@ -362,7 +358,15 @@ import { Icon } from "astro-icon";
 
 <style>
   :root {
-    --ui-color: hsla(0, 0%, 100%, 0.9);
+    --ui-color: hsl(0, 0%, 100%);
+  }
+
+  /* Backdrop, in order to darken the images a little bit */
+  .backdrop {
+    position: fixed;
+    z-index: 1;
+    background-color: hsla(0, 0%, 0%, 0.5);
+    inset: 0;
   }
 
   /* Slider */
@@ -379,6 +383,7 @@ import { Icon } from "astro-icon";
     width: 700vw;
     height: 100%;
   }
+
   .slider-videos > img {
     position: relative;
     border: none;
@@ -443,7 +448,7 @@ import { Icon } from "astro-icon";
     opacity: 0;
   }
 
-  /* Hamburger Btn */
+  /* Hamburger Btn; The animation is from Kevin Powell */
   .slider__btn--menu {
     overflow: hidden;
   }
@@ -467,7 +472,7 @@ import { Icon } from "astro-icon";
     stroke-dashoffset: -90;
   }
 
-  /* Dropdown */
+  /* Dropdown; Or in this case dropup :) */
   .projects-dropdown-menu {
     z-index: 1;
     position: absolute;
