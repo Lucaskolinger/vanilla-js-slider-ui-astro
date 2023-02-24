@@ -1,0 +1,513 @@
+---
+import Images from "../images.json";
+import { Icon } from "astro-icon";
+---
+
+<section class="projects-slider">
+  <div class="projects-date slides-up"></div>
+  <div class="slider__btn-container">
+    <button
+      class="slider__btn slider__btn--left slides-left"
+      aria-label="Zum vorherigen Projekt gehen"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        width="28"
+        height="28"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"></path>
+      </svg>
+    </button>
+    <button
+      class="slider__btn slider__btn--menu slides-down"
+      aria-controls="primary-navigation"
+      aria-expanded="false"
+      aria-label="Filter Projects"
+    >
+      <svg
+        stroke="var(--ui-color)"
+        fill="none"
+        class="hamburger"
+        viewBox="-10 -10 120 120"
+        width="60"
+      >
+        <path
+          class="line"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="m 20 40 h 60 a 1 1 0 0 1 0 20 h -60 a 1 1 0 0 1 0 -40 h 30 v 70"
+        >
+        </path>
+      </svg>
+    </button>
+    <button
+      class="slider__btn slider__btn--right slides-right"
+      aria-label="Zum nächsten Projekt gehen"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        width="28"
+        height="28"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"></path>
+      </svg>
+    </button>
+  </div>
+  <nav class="projects-dropdown-menu" aria-expanded="false">
+    <button class="projects-filter-btn"
+      ><Icon class="projects-filter-icon" name="ph:funnel-bold" /><p
+        class="projects-filter-text"
+      >
+        Filter 1
+      </p>
+    </button>
+    <button class="projects-filter-btn"
+      ><Icon class="projects-filter-icon" name="ph:funnel-bold" /><p
+        class="projects-filter-text"
+      >
+        Filter 2
+      </p>
+    </button>
+    <button class="projects-filter-btn"
+      ><Icon class="projects-filter-icon" name="ph:funnel-bold" /><p
+        class="projects-filter-text"
+      >
+        Filter 3
+      </p>
+    </button>
+    <button class="projects-filter-btn"
+      ><Icon class="projects-filter-icon" name="ph:funnel-bold" /><p
+        class="projects-filter-text"
+      >
+        Filter 4
+      </p>
+    </button>
+  </nav>
+  <div class="slider-videos">
+    <img alt={Images[4].alt} data-date={Images[4].stats} src={Images[4].url} />
+    {
+      Images.map((image) => (
+        <>
+          <img src={image.url} data-date={image.stats} alt={image.alt} />
+        </>
+      ))
+    }
+    <img alt={Images[0].alt} data-date={Images[0].stats} src={Images[0].url} />
+  </div>
+</section>
+
+<script>
+  const sliderSection = document.querySelector<HTMLElement>(".projects-slider");
+  const sliderVideos = document.querySelector<HTMLDivElement>(".slider-videos");
+
+  const slidesArray = [...sliderVideos.querySelectorAll<HTMLElement>("img")];
+
+  const leftArrow =
+    document.querySelector<HTMLButtonElement>(".slider__btn--left");
+
+  const rightArrow = document.querySelector<HTMLButtonElement>(
+    ".slider__btn--right"
+  );
+
+  const menuBtn =
+    document.querySelector<HTMLButtonElement>(".slider__btn--menu");
+
+  const projectsDropdown = document.querySelector<HTMLElement>(
+    ".projects-dropdown-menu"
+  );
+
+  const dateUi = document.querySelector(".projects-date") as HTMLElement | null;
+  const arrayOfElementsToToggle = [
+    leftArrow,
+    rightArrow,
+    menuBtn,
+    dateUi,
+    projectsDropdown,
+  ];
+
+  const autoplayTime = 8000;
+  const projectUiSlideTime = 8000;
+  let projectsUiSlideTimeout: any;
+  let slideIndex = 1;
+  let isMoving = false;
+
+  arrayOfElementsToToggle.forEach((el) => {
+    el.style.transition = "all 800ms cubic-bezier(0.77,0,0.18,1)";
+  });
+
+  //   Intersection observer for UI Slide-In and Slide-Out
+  let projectsObserverOptions = {
+    rootMargin: "0px",
+    threshold: 0.25,
+  };
+
+  const projectsObserverCallback = (entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      if (entry.intersectionRatio >= 0.25) {
+        if (menuBtn.classList.contains("slides-down")) {
+          // Reset Ui slideout Timer
+          slideInProjectsUI();
+          clearTimeout(projectsUiSlideTimeout);
+          projectsUiSlideTimeout = setTimeout(
+            slideOutProjectsUI,
+            projectUiSlideTime
+          );
+        } else {
+          clearTimeout(projectsUiSlideTimeout);
+          projectsUiSlideTimeout = setTimeout(
+            slideOutProjectsUI,
+            projectUiSlideTime
+          );
+        }
+      }
+    });
+  };
+
+  const projectsObserver = new IntersectionObserver(
+    projectsObserverCallback,
+    projectsObserverOptions
+  );
+  projectsObserver.observe(sliderSection);
+
+  const slideOutProjectsUI = () => {
+    leftArrow.classList.add("slides-left");
+    rightArrow.classList.add("slides-right");
+    menuBtn.classList.add("slides-down");
+    dateUi.classList.add("slides-up");
+    projectsDropdown.classList.add("slides-down");
+  };
+
+  const slideInProjectsUI = () => {
+    leftArrow.classList.remove("slides-left");
+    rightArrow.classList.remove("slides-right");
+    menuBtn.classList.remove("slides-down");
+    dateUi.classList.remove("slides-up");
+    projectsDropdown.classList.remove("slides-down");
+  };
+
+  const handleClickOnSlider = (e: MouseEvent & { target: HTMLElement }) => {
+    if (
+      e.target.classList.contains("projects-dropdown-menu") ||
+      e.target.classList.contains("slider__btn") ||
+      e.target.classList.contains("projects-filter-icon") ||
+      e.target.classList.contains("projects-filter-text") ||
+      e.target.classList.contains("projects-filter-button") ||
+      e.target.classList.contains("projects-dropdown-menu")
+    ) {
+      return;
+    }
+    if (!menuBtn.classList.contains("slides-down")) {
+      // Reset Ui slideout Timer
+      clearTimeout(projectsUiSlideTimeout);
+      slideOutProjectsUI();
+    } else {
+      // Reset Ui slideout Timer
+      clearTimeout(projectsUiSlideTimeout);
+      slideInProjectsUI();
+      projectsUiSlideTimeout = setTimeout(
+        slideOutProjectsUI,
+        projectUiSlideTime
+      );
+    }
+  };
+
+  sliderSection.addEventListener("click", handleClickOnSlider);
+
+  function moveSlides() {
+    sliderVideos.style.transform = `translateX(-${slideIndex * 100}vw)`;
+    dateUi.textContent = slidesArray[slideIndex].dataset.date;
+  }
+
+  moveSlides();
+
+  // autoplay
+  const autoplay = () => {
+    if (isMoving) {
+      return;
+    }
+    moveHandler("right");
+  };
+  let autoplayTimer = setInterval(autoplay, autoplayTime);
+
+  // move when clicked
+  function moveHandler(direction: string) {
+    isMoving = true;
+    sliderVideos.style.transition = `transform 450ms cubic-bezier(0.65,0.05,0.36,1)`;
+    direction !== "right" ? (slideIndex -= 1) : (slideIndex += 1);
+    moveSlides();
+  }
+
+  // click right btn
+  rightArrow.addEventListener("click", () => {
+    if (isMoving) {
+      return;
+    }
+    // Reset Ui slideout Timer
+    clearTimeout(projectsUiSlideTimeout);
+    projectsUiSlideTimeout = setTimeout(slideOutProjectsUI, projectUiSlideTime);
+    // Reset autoplay timer
+    clearInterval(autoplayTimer);
+    autoplayTimer = setInterval(autoplay, autoplayTime);
+    moveHandler("right");
+  });
+
+  // click left btn
+  leftArrow.addEventListener("click", () => {
+    if (isMoving) {
+      return;
+    }
+    // Reset Ui slideout Timer
+    clearTimeout(projectsUiSlideTimeout);
+    projectsUiSlideTimeout = setTimeout(slideOutProjectsUI, projectUiSlideTime);
+    // Reset autoplay timer
+    clearInterval(autoplayTimer);
+    autoplayTimer = setInterval(autoplay, autoplayTime);
+    moveHandler("left");
+  });
+
+  // keyboard arrow handler
+  window.addEventListener("keyup", (e) => {
+    if (isMoving) {
+      return;
+    }
+    switch (e.key) {
+      case "ArrowLeft":
+        // Reset Ui slideout Timer
+        clearTimeout(projectsUiSlideTimeout);
+        projectsUiSlideTimeout = setTimeout(
+          slideOutProjectsUI,
+          projectUiSlideTime
+        );
+        // Reset autoplay timer
+        clearInterval(autoplayTimer);
+        autoplayTimer = setInterval(autoplay, autoplayTime);
+        moveHandler("left");
+        break;
+      case "ArrowRight":
+        // Reset Ui slideout Timer
+        clearTimeout(projectsUiSlideTimeout);
+        projectsUiSlideTimeout = setTimeout(
+          slideOutProjectsUI,
+          projectUiSlideTime
+        );
+        // Reset autoplay timer
+        clearInterval(autoplayTimer);
+        autoplayTimer = setInterval(autoplay, autoplayTime);
+        moveHandler("right");
+        break;
+      default:
+        break;
+    }
+  });
+
+  sliderVideos.addEventListener("transitionend", () => {
+    isMoving = false;
+    // First and Last Slide Jumping
+    if (slideIndex === 0) {
+      sliderVideos.style.transition = "none";
+      slideIndex = slidesArray.length - 2;
+      moveSlides();
+    }
+    if (slideIndex === slidesArray.length - 1) {
+      slideIndex = 1;
+      sliderVideos.style.transition = "none";
+      moveSlides();
+    }
+  });
+
+  // toggling Menu
+  let preventFilterBtnClick = false;
+
+  menuBtn.addEventListener("click", () => {
+    const isOpened = menuBtn.getAttribute("aria-expanded");
+    clearTimeout(projectsUiSlideTimeout);
+    projectsUiSlideTimeout = setTimeout(slideOutProjectsUI, projectUiSlideTime);
+
+    if (preventFilterBtnClick == true) {
+      return;
+    }
+
+    if (isOpened === "false") {
+      projectsDropdown.style.display = "flex";
+      setTimeout(() => {
+        menuBtn.setAttribute("aria-expanded", "true");
+        projectsDropdown.setAttribute("aria-expanded", "true");
+      }, 1);
+    } else {
+      preventFilterBtnClick = true;
+      menuBtn.setAttribute("aria-expanded", "false");
+      projectsDropdown.setAttribute("aria-expanded", "false");
+      setTimeout(() => {
+        projectsDropdown.style.display = "none";
+        preventFilterBtnClick = false;
+      }, 900);
+    }
+  });
+</script>
+
+<style>
+  :root {
+    --ui-color: hsla(0, 0%, 100%, 0.9);
+  }
+
+  /* Slider */
+  .projects-slider {
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    height: 100%;
+  }
+
+  .slider-videos {
+    display: flex;
+    width: 700vw;
+    height: 100%;
+  }
+  .slider-videos > img {
+    position: relative;
+    border: none;
+    width: 100vw;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Project Stats */
+  .projects-date {
+    position: absolute;
+    top: 2rem;
+    color: var(--ui-color);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  /* Slider controls */
+  .slider__btn-container {
+    color: var(--ui-color);
+    z-index: 1;
+    width: 60%;
+    height: max-content;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    bottom: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .slider__btn-container button svg {
+    pointer-events: none;
+  }
+
+  .slider__btn-container :nth-child(1):hover {
+    transform: translateX(-0.5rem);
+  }
+  .slider__btn-container :nth-child(3):hover {
+    transform: translateX(0.5rem);
+  }
+
+  .slides-right {
+    transform: translateX(50vw);
+    opacity: 0;
+  }
+  .slides-left {
+    transform: translateX(-50vw);
+    opacity: 0;
+  }
+  .slides-down {
+    transform: translateY(50vh);
+    opacity: 0;
+  }
+  .slides-up {
+    transform: translateY(-50vh);
+    opacity: 0;
+  }
+
+  /* Hamburger Btn */
+  .slider__btn--menu {
+    overflow: hidden;
+  }
+
+  .slider__btn--menu .hamburger {
+    transition: translate 0.5s, rotate 0.5s;
+  }
+
+  .slider__btn--menu[aria-expanded="true"] .hamburger {
+    translate: 10px -10px;
+    rotate: 0.125turn;
+  }
+
+  .slider__btn--menu .line {
+    transition: 0.5s;
+    stroke-dasharray: 60 31 60 300;
+  }
+
+  .slider__btn--menu[aria-expanded="true"] .line {
+    stroke-dasharray: 60 105 60 300;
+    stroke-dashoffset: -90;
+  }
+
+  /* Dropdown */
+  .projects-dropdown-menu {
+    z-index: 1;
+    position: absolute;
+    bottom: 20%;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    padding: 1rem;
+    width: max-content;
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--ui-color);
+  }
+
+  .projects-dropdown-menu button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 450ms cubic-bezier(0.77, 0, 0.18, 1);
+    font-family: "quicksand";
+    font-weight: 500;
+  }
+
+  .projects-dropdown-menu[aria-expanded="false"] button {
+    transform: translateX(-4rem);
+    opacity: 0;
+  }
+
+  .projects-dropdown-menu button:nth-child(2) {
+    transition-delay: 150ms;
+  }
+  .projects-dropdown-menu button:nth-child(3) {
+    transition-delay: 300ms;
+  }
+  .projects-dropdown-menu button:nth-child(4) {
+    transition-delay: 450ms;
+  }
+
+  [astro-icon="ph:funnel-bold"] {
+    width: 1.5rem;
+  }
+</style>

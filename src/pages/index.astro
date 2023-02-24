@@ -1,15 +1,43 @@
 ---
+import Slider from "../components/Slider.astro";
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global>
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family: "quicksand";
+        height: 100%;
+        height: -webkit-fill-available;
+        background-color: hsl(0, 0%, 10%);
+      }
+
+      button {
+        background-color: transparent;
+        border: none;
+        color: var(--ui-color);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <Slider />
+  </body>
 </html>
